@@ -1,0 +1,3 @@
+项目 基于activiti6.0-springboot2.1.6
+实现了在不改业务代码的条件下进行流程的动态部署以及运行.
+细节可查询类ProcessUtil和ProcessService
