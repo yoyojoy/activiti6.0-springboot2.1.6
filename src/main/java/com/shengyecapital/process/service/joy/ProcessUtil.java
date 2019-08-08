@@ -81,6 +81,10 @@ public class ProcessUtil {
                         for (SequenceFlow tr1 : outTransitionsTemp) {
                             s = tr1.getConditionExpression();
                             if (this.isCondition(ac.getId(), StringUtils.trim(s.toString()), elString)) {
+                                Execution execution = runtimeService.createExecutionQuery().processInstanceId(processInstanceId).onlyChildExecutions().singleResult();
+                                if(execution != null) {
+                                    runtimeService.setVariable(execution.getId(), ac.getId(), elString);
+                                }
                                 return this.nextTaskDefinition(bpmnModel, tr1.getTargetFlowElement(), activityId, elString, processInstanceId);
                             }
                         }

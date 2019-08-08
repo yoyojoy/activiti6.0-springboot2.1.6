@@ -175,11 +175,10 @@ public class ProcessService {
 
     /*完成第一个环节(发起申请),并自动添加批注,并指定下一环节的审批人*/
     private void dealTheFirstTask(String tenantId, String taskId, String userId, String userName) {
-
         CompleteTaskAo ao = new CompleteTaskAo();
-        ao.setDealUserId(userId);
+        ao.setDealId(userId);
         ao.setTenantId(tenantId);
-        ao.setDealUserName(userName);
+        ao.setDealName(userName);
         ao.setComment("发起流程,提交申请");
         ao.setTaskId(taskId);
         ao.setDecision(ProcessDecisionEnum.PASS.getStatus());
@@ -551,17 +550,14 @@ public class ProcessService {
         }
         String msg = String.format("%s_|_%s", task.getName(), ao.getComment());
         taskService.addComment(task.getId(), task.getProcessInstanceId(), CommentEntity.TYPE_COMMENT, msg);
-        Map<String, Object> vars = processInstance.getProcessVariables();
-        if (vars == null) {
-            vars = new HashMap<>();
-        }
         ProcessDecisionEnum decisionEnum = ao.getDecision() == null ? ProcessDecisionEnum.PASS : ProcessDecisionEnum.from(ao.getDecision());
         FlowElement nextElement = processUtil.getNextTaskElement(task, decisionEnum);
+        Map<String, Object> vars = null;
         if (nextElement != null) {
-            vars = this.getAssigneeList(task.getProcessInstanceId(), nextElement.getId(), vars);
+            vars = this.getAssigneeList(task.getProcessInstanceId(), nextElement.getId(), processInstance.getProcessVariables());
         }
-        Authentication.setAuthenticatedUserId(ao.getDealUserName());
-        taskService.setAssignee(task.getId(), ao.getDealUserId());
+        Authentication.setAuthenticatedUserId(ao.getDealName());
+        taskService.setAssignee(task.getId(), ao.getDealId());
         taskService.complete(task.getId(), vars);
         if (nextElement != null) {
             this.setNextUser(nextElement.getId(), task.getProcessInstanceId(), vars);

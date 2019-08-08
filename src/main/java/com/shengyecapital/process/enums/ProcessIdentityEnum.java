@@ -12,6 +12,8 @@ public enum ProcessIdentityEnum {
     XMGS("XMGS"),
     //债务人
     ZWR("ZWR"),
+    //地产商
+    DCS("DCS"),
     //保理商
     BLS("BLS");
 

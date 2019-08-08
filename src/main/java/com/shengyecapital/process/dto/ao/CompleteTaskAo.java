@@ -13,14 +13,14 @@ public class CompleteTaskAo extends BaseEnvVo {
     private String taskId;
 
     /**
-     * 处理人ID
+     * 处理ID
      */
-    private String dealUserId;
+    private String dealId;
 
     /**
-     * 处理人ID
+     * 处理(人/角色/企业)名称
      */
-    private String dealUserName;
+    private String dealName;
 
     /**
      * 批注信息
