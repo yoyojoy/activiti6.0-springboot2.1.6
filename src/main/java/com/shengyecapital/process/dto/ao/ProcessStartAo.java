@@ -42,7 +42,24 @@ public class ProcessStartAo extends BaseEnvVo {
     private String processStarterName;
 
     /**
-     * 发起流程设定的的参数集合
+     * 发起流程设定的的参数集合, 例:
+      [{
+      	"key": "GYS",
+      	"assigneeList": []
+      },
+      {
+        "key": "XMGS",
+        "assigneeList": ["USER1001", "USER1002"]
+      },
+      {
+      	"key": "ZWR",
+      	"assigneeList": ["ROLE1235"]
+      },
+      {
+      	"key": "BLS",
+      	"assigneeList": ["CUSTOM9527"]
+      }]
      */
     List<ProcessParam> variables;
+
 }

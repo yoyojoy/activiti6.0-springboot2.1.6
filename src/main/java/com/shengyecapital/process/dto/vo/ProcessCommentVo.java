@@ -14,14 +14,14 @@ public class ProcessCommentVo {
     private String taskName;
 
     /**
-     * 任务处理人
+     * 任务处理ID
      */
-    private String dealUserId;
+    private String dealId;
 
     /**
-     * 任务处理人
+     * 任务处理名称
      */
-    private String dealUserName;
+    private String dealName;
 
     //任务处理时间
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="GMT+8")

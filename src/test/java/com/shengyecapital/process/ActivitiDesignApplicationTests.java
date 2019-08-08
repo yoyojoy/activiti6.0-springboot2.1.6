@@ -39,7 +39,7 @@ public class ActivitiDesignApplicationTests {
         String taskId = "5f23f187-b80c-11e9-ac92-8cec4b5172d5";
         String tenantId = "pay-dev";
         System.out.println("\n=========================================\n");
-        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        Task task = taskService.createTaskQuery().taskId(taskId).taskTenantId(tenantId).singleResult();
         FlowElement next = processUtil.getNextTaskElement(task, ProcessDecisionEnum.PASS);
         System.out.println(JSON.toJSONString(next));
     }
@@ -59,11 +59,11 @@ public class ActivitiDesignApplicationTests {
 
     @Test
     public void dealTask(){
-        String  proceInsId = "cf4a16ab-b834-11e9-80c3-8cec4b5172d5";
+        String  taskId = "cf4a16ab-b834-11e9-80c3-8cec4b5172d5";
         CompleteTaskAo ao = new CompleteTaskAo();
-        ao.setTaskId("201910100001");
-        ao.setDealUserId("gys_user001");
-        ao.setDealUserName("供应商用户001");
+        ao.setTaskId(taskId);
+        ao.setDealId("gys_user001");
+        ao.setDealName("供应商用户001");
         ao.setComment("供应商001批注");
         ao.setTenantId("pay-dev");
         ao.setDecision(ProcessDecisionEnum.PASS.getStatus());

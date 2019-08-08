@@ -522,8 +522,8 @@ public class ProcessService {
             vo.setAction(msg[0]);
             vo.setComment(msg[1]);
             vo.setDealTime(commentEntity.getTime());
-            vo.setDealUserId(task.getAssignee());
-            vo.setDealUserName(!CollectionUtils.isEmpty(his) ? his.get(0).getUserId() : "");
+            vo.setDealId(task.getAssignee());
+            vo.setDealName(!CollectionUtils.isEmpty(his) ? his.get(0).getUserId() : "");
             vo.setTaskName(task.getName());
             list.add(vo);
         }
