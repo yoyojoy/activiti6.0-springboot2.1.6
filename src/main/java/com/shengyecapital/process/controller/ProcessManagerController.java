@@ -1,6 +1,6 @@
 package com.shengyecapital.process.controller;
 
-import com.shengyecapital.common.dto.common.PageResult;
+import com.shengyecapital.process.common.PageResult;
 import com.shengyecapital.process.dto.ao.*;
 import com.shengyecapital.process.dto.vo.ProcessCommentVo;
 import com.shengyecapital.process.dto.vo.ProcessDeployedListVo;

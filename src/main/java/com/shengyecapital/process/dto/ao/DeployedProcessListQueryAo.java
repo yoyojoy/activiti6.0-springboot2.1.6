@@ -1,9 +1,7 @@
 package com.shengyecapital.process.dto.ao;
 
-import com.shengyecapital.common.dto.common.BasePageDto;
-import com.shengyecapital.process.dto.BaseEnvVo;
+import com.shengyecapital.process.common.BasePageDto;
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class DeployedProcessListQueryAo extends BasePageDto {

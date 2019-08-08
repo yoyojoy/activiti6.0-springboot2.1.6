@@ -1,6 +1,6 @@
 package com.shengyecapital.process.dto.ao;
 
-import com.shengyecapital.common.dto.common.BasePageDto;
+import com.shengyecapital.process.common.BasePageDto;
 import lombok.Data;
 
 @Data
