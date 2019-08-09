@@ -384,6 +384,7 @@ public class ProcessService {
                     target.setTaskName(task.getName());
                     target.setTaskId(task.getId());
                     target.setTaskStartTime(task.getCreateTime());
+                    target.setProcessInstanceId(task.getProcessInstanceId());
                     result.add(target);
                 }
             }

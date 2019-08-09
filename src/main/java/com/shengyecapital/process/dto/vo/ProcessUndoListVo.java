@@ -55,4 +55,9 @@ public class ProcessUndoListVo {
      */
     private String taskId;
 
+    /**
+     * 流程实例ID
+     */
+    private String processInstanceId;
+
 }
