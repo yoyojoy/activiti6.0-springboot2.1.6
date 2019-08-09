@@ -29,11 +29,6 @@ public class ProcessInstanceListQueryAo extends BasePageDto {
     private String currentTaskName;
 
     /**
-     * 商户ID
-     */
-    private String tenantId;
-
-    /**
      * 是否完结
      */
     private Boolean isFinished = false;

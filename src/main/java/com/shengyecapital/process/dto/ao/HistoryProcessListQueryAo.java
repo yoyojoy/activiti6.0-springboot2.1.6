@@ -8,5 +8,4 @@ public class HistoryProcessListQueryAo extends BasePageDto {
 
     private String processDefinitionKey;
 
-    private String tenantId;
 }

@@ -1,11 +1,10 @@
 package com.shengyecapital.process.dto.ao;
 
-import com.shengyecapital.process.dto.BaseEnvVo;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
 @Data
-public class DeploymentAo extends BaseEnvVo {
+public class DeploymentAo {
 
     /**
      * 流程文件

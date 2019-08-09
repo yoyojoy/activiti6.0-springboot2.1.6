@@ -1,11 +1,10 @@
 package com.shengyecapital.process.dto.ao;
 
-import com.shengyecapital.process.dto.BaseEnvVo;
 import com.shengyecapital.process.enums.ProcessDecisionEnum;
 import lombok.Data;
 
 @Data
-public class CompleteTaskAo extends BaseEnvVo {
+public class CompleteTaskAo {
 
     /**
      * 任务ID

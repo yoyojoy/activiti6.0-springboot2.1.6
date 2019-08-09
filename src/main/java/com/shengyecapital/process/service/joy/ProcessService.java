@@ -83,9 +83,6 @@ public class ProcessService {
      * @throws Exception
      */
     public void deploy(DeploymentAo ao) throws Exception {
-        if (StringUtils.isBlank(ao.getTenantId())) {
-            throw new ServerErrorException("商户标识tenantId不能为空");
-        }
         if (ao.getFile() == null) {
             throw new ServerErrorException("流程文件不能为空");
         }
@@ -109,11 +106,10 @@ public class ProcessService {
         }
         Deployment deployment = repositoryService.createDeployment()
                 .name(processDefinitionName).addString(fileName, xml)
-                .tenantId(ao.getTenantId())
                 .category(ao.getBusinessType())
                 .key(processDefinitionKey)
                 .deploy();
-        List<Model> olds = repositoryService.createModelQuery().modelKey(processDefinitionKey).modelTenantId(ao.getTenantId()).orderByModelVersion().desc().list();
+        List<Model> olds = repositoryService.createModelQuery().modelKey(processDefinitionKey).orderByModelVersion().desc().list();
         Model model = repositoryService.newModel();
         if (!CollectionUtils.isEmpty(olds)) {
             //该定义KEY的流程有部署过
@@ -125,9 +121,8 @@ public class ProcessService {
         model.setKey(processDefinitionKey);
         model.setCategory(ao.getBusinessType());
         model.setDeploymentId(deployment.getId());
-        model.setTenantId(ao.getTenantId());
         repositoryService.saveModel(model);
-        log.info("商户{}部署新的流程成功, 流程定义ID: {}", ao.getTenantId(), deployment.getId());
+        log.info("部署新的流程成功, 流程定义ID: {}", deployment.getId());
 
     }
 
@@ -146,9 +141,6 @@ public class ProcessService {
         if (StringUtils.isBlank(ao.getProcessDefinitionKey())) {
             throw new ServerErrorException("流程唯一标识processDefinitionKey不能为空");
         }
-        if (StringUtils.isBlank(ao.getTenantId())) {
-            throw new ServerErrorException("商户标识tenantId不能为空");
-        }
         Map<String, Object> vars = new HashMap<>();
         if (!CollectionUtils.isEmpty(ao.getVariables())) {
             vars.put(ProcessConstant.PROCESS_PARAM, JSON.toJSONString(ao.getVariables()));
@@ -163,24 +155,23 @@ public class ProcessService {
         vars.put(ProcessConstant.CUSTOMER_ID, ao.getCustomerId());
         //业务名称
         vars.put(ProcessConstant.BUSINESS_NAME, ao.getBusinessName());
-        ProcessInstance pi = runtimeService.startProcessInstanceByKeyAndTenantId(ao.getProcessDefinitionKey(), ao.getTenantId());
+        ProcessInstance pi = runtimeService.startProcessInstanceByKey(ao.getProcessDefinitionKey());
         if (pi == null) {
             throw new ServerErrorException("发起流程失败");
         }
         log.info("流程发起成功, 流程实例ID: {}", pi.getId());
         runtimeService.updateBusinessKey(pi.getProcessInstanceId(), ao.getBusinessId());
-        Task task = taskService.createTaskQuery().processInstanceId(pi.getProcessInstanceId()).processInstanceBusinessKey(ao.getBusinessId()).taskTenantId(ao.getTenantId()).active().singleResult();
+        Task task = taskService.createTaskQuery().processInstanceId(pi.getProcessInstanceId()).processInstanceBusinessKey(ao.getBusinessId()).active().singleResult();
         runtimeService.setVariables(task.getExecutionId(), vars);
         //完成第一个环节,并设置下一个环节的处理人
-        this.dealTheFirstTask(ao.getTenantId(), task.getId(), ao.getProcessStarterId(), ao.getProcessStarterName());
+        this.dealTheFirstTask(task.getId(), ao.getProcessStarterId(), ao.getProcessStarterName());
         log.info("\n======================流程第一个环节已完成========================\n");
     }
 
     /*完成第一个环节(发起申请),并自动添加批注,并指定下一环节的审批人*/
-    private void dealTheFirstTask(String tenantId, String taskId, String userId, String userName) {
+    private void dealTheFirstTask(String taskId, String userId, String userName) {
         CompleteTaskAo ao = new CompleteTaskAo();
         ao.setDealId(userId);
-        ao.setTenantId(tenantId);
         ao.setDealName(userName);
         ao.setComment("发起流程,提交申请");
         ao.setTaskId(taskId);
@@ -195,9 +186,6 @@ public class ProcessService {
      * @return
      */
     public PageResult<ProcessDeployedListVo> getDeployedProcessList(DeployedProcessListQueryAo ao) {
-        if (StringUtils.isBlank(ao.getTenantId())) {
-            throw new ServerErrorException("商户标识tenantId不能为空");
-        }
         Page<ProcessDeployedListVo> page = PageHelper.startPage(ao.getPageNum(), ao.getPageSize());
         StringBuffer sql = new StringBuffer("SELECT m.id_ processDefinitionId, m.version_ version, t.DEPLOY_TIME_ deployTime, m.name_ processDefinitionName, \n" +
                 "\t\t\tm.key_ processDefinitionKey, t.category_ businessType, t.ID_ deploymentId  from (select a.* from ACT_RE_PROCDEF a RIGHT JOIN \n" +
@@ -219,7 +207,7 @@ public class ProcessService {
         if (StringUtils.isNotBlank(ao.getEndTime())) {
             sql.append("and t.DEPLOY_TIME_ <= DATE_FORMT(").append(ao.getEndTime()).append(", '%Y-%m-%d') ");
         }
-        sql.append("and t.TENANT_ID_ ='").append(ao.getTenantId()).append("' order by t.DEPLOY_TIME_ DESC ");
+        sql.append("' order by t.DEPLOY_TIME_ DESC ");
         List<ProcessDeployedListVo> data = activitiMapper.queryDeployedProcessesList(sql.toString());
         PageResult<ProcessDeployedListVo> pageResult = new PageResult<>();
         pageResult.setRecords(data);
@@ -233,17 +221,12 @@ public class ProcessService {
      * @return
      */
     public PageResult<ProcessDeployedListVo> getHistoryProcessList(HistoryProcessListQueryAo ao) {
-        if (StringUtils.isBlank(ao.getTenantId())) {
-            throw new ServerErrorException("商户标识tenantId不能为空");
-        }
         Page<ProcessDeployedListVo> page = PageHelper.startPage(ao.getPageNum(), ao.getPageSize());
-        List<Deployment> list= repositoryService.createDeploymentQuery().processDefinitionKey(ao.getProcessDefinitionKey())
-                .deploymentTenantId(ao.getTenantId()).list();
+        List<Deployment> list= repositoryService.createDeploymentQuery().processDefinitionKey(ao.getProcessDefinitionKey()).list();
         List<ProcessDeployedListVo> res = new ArrayList<>();
         for(Deployment deployment : list){
-            ProcessDefinition definition = repositoryService.createProcessDefinitionQuery().deploymentId(deployment.getId())
-                    .processDefinitionTenantId(ao.getTenantId()).active().singleResult();
-            Model model = repositoryService.createModelQuery().deploymentId(deployment.getId()).modelTenantId(ao.getTenantId()).singleResult();
+            ProcessDefinition definition = repositoryService.createProcessDefinitionQuery().deploymentId(deployment.getId()).active().singleResult();
+            Model model = repositoryService.createModelQuery().deploymentId(deployment.getId()).singleResult();
             ProcessDeployedListVo vo = new ProcessDeployedListVo();
             vo.setProcessDefinitionId(definition.getId());
             vo.setVersion(model.getVersion());
@@ -292,7 +275,7 @@ public class ProcessService {
         if (StringUtils.isNotBlank(ao.getProcessDefinitionName())) {
             query.processDefinitionName(ao.getProcessDefinitionName());
         }
-        List<HistoricProcessInstance> processInstances = query.processInstanceTenantId(ao.getTenantId()).unfinished().includeProcessVariables().orderByProcessInstanceStartTime().asc().list();
+        List<HistoricProcessInstance> processInstances = query.unfinished().includeProcessVariables().orderByProcessInstanceStartTime().asc().list();
         if (!CollectionUtils.isEmpty(processInstances)) {
             result = processInstances.stream().map(processInstance -> {
                 Map<String, Object> map = processInstance.getProcessVariables();
@@ -335,9 +318,6 @@ public class ProcessService {
      * @return
      */
     public PageResult<ProcessUndoListVo> getPersonalUndoTaskList(ProcessUndoQueryListAo ao) throws Exception {
-        if(StringUtils.isBlank(ao.getTenantId())){
-            throw new ServerErrorException("商户标志tenantId不能为空");
-        }
         if (ao.getDealIds() == null || ao.getDealIds().length == 0) {
             throw new ServerErrorException("查询个人待办缺少必须参数");
         }
@@ -356,7 +336,7 @@ public class ProcessService {
         if (StringUtils.isNotBlank(ao.getProcessDefinitionName())) {
             query.processDefinitionNameLike(ao.getProcessDefinitionName());
         }
-        List<Task> tasks = query.taskTenantId(ao.getTenantId()).active().includeProcessVariables().orderByTaskCreateTime().asc().list();
+        List<Task> tasks = query.active().includeProcessVariables().orderByTaskCreateTime().asc().list();
         if (!CollectionUtils.isEmpty(tasks)) {
             for(Task task : tasks) {
                 if(StringUtils.isNotBlank(task.getAssignee()) && Arrays.asList(ao.getDealIds()).contains(task.getAssignee())) {
@@ -515,15 +495,12 @@ public class ProcessService {
      * @return
      */
     public PageResult<ProcessInstanceListVo> getProcessInstanceList(ProcessInstanceListQueryAo ao) {
-        if(StringUtils.isBlank(ao.getTenantId())){
-            throw new ServerErrorException("商户标识tenantId不能为空");
-        }
         Page<ProcessInstanceListVo> page = PageHelper.startPage(ao.getPageNum(), ao.getPageSize());
         StringBuffer sql = new StringBuffer("select DISTINCT c.PROC_INST_ID_ processInstanceId, c.PROC_DEF_ID_ processDefinitionId, a.NAME_ processDefinitionName,b.NAME_ currentTaskName, c.START_TIME_ createTime, " +
                 " c.BUSINESS_KEY_ businessId, d.TEXT_ businessName from ACT_HI_PROCINST c LEFT JOIN ACT_HI_ACTINST t on c.PROC_INST_ID_=t.ID_ " +
                 " LEFT JOIN ACT_RE_PROCDEF a on a.ID_=c.PROC_DEF_ID_ " +
                 " LEFT JOIN ACT_RU_TASK b on c.PROC_INST_ID_=b.PROC_INST_ID_ and b.PROC_DEF_ID_=c.PROC_DEF_ID_ " +
-                " LEFT JOIN ACT_HI_VARINST d on d.PROC_INST_ID_=c.PROC_INST_ID_ and d.NAME_='business_name' where c.TENANT_ID_='").append(ao.getTenantId()).append("' ");
+                " LEFT JOIN ACT_HI_VARINST d on d.PROC_INST_ID_=c.PROC_INST_ID_ and d.NAME_='business_name' where 1=1 ");
         if (StringUtils.isNotBlank(ao.getProcessDefinitionName())) {
             sql.append("and a.NAME_ like concat(%,").append(ao.getProcessDefinitionName()).append(" %) ");
         }
@@ -556,16 +533,13 @@ public class ProcessService {
      * @return
      */
     public PageResult<ProcessInstanceListVo> unfinishedProcessInstanceList(ProcessInstanceListQueryAo ao) {
-        if(StringUtils.isBlank(ao.getTenantId())){
-            throw new ServerErrorException("商户标识tenantId不能为空");
-        }
         Page<ProcessInstanceListVo> page = PageHelper.startPage(ao.getPageNum(), ao.getPageSize());
         StringBuffer sql = new StringBuffer("select DISTINCT c.PROC_INST_ID_ processInstanceId, c.PROC_DEF_ID_ processDefinitionId, a.NAME_ processDefinitionName,b.NAME_ currentTaskName, c.START_TIME_ createTime, " +
                 " c.BUSINESS_KEY_ businessId, d.TEXT_ businessName from ACT_HI_PROCINST c LEFT JOIN ACT_HI_ACTINST t on c.PROC_INST_ID_=t.ID_ " +
                 " LEFT JOIN ACT_RE_PROCDEF a on a.ID_=c.PROC_DEF_ID_ " +
                 " LEFT JOIN ACT_RU_TASK b on c.PROC_INST_ID_=b.PROC_INST_ID_ and b.PROC_DEF_ID_=c.PROC_DEF_ID_ " +
                 " LEFT JOIN ACT_HI_VARINST d on d.PROC_INST_ID_=c.PROC_INST_ID_ and d.NAME_='business_name' where" +
-                " (c.END_TIME_ is null or c.END_TIME_ = '') and c.TENANT_ID_='").append(ao.getTenantId()).append("' ");
+                " (c.END_TIME_ is null or c.END_TIME_ = '') ");
         if (StringUtils.isNotBlank(ao.getProcessDefinitionName())) {
             sql.append("and a.NAME_ like concat(%,").append(ao.getProcessDefinitionName()).append(" %) ");
         }
@@ -622,7 +596,7 @@ public class ProcessService {
      * @param ao
      */
     public void taskProcess(CompleteTaskAo ao) {
-        Task task = taskService.createTaskQuery().taskId(ao.getTaskId()).taskTenantId(ao.getTenantId()).active().singleResult();
+        Task task = taskService.createTaskQuery().taskId(ao.getTaskId()).active().singleResult();
         if (task == null) {
             throw new ServerErrorException("任务不存在");
         }

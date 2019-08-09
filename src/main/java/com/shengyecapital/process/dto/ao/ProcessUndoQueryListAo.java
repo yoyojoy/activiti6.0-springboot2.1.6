@@ -21,11 +21,6 @@ public class ProcessUndoQueryListAo extends BasePageDto {
     private String endTime;
 
     /**
-     * 商户ID
-     */
-    private String tenantId;
-
-    /**
      * 处理的ID结合
      * 可以类似于以下id: USER1001, ROLE5214, CUSTOM9527
      */

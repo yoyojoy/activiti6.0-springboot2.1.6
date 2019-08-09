@@ -1,15 +1,12 @@
 package com.shengyecapital.process.dto.ao;
 
-import com.shengyecapital.process.dto.BaseEnvVo;
 import com.shengyecapital.process.dto.ProcessParam;
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
-public class ProcessStartAo extends BaseEnvVo {
+public class ProcessStartAo {
 
     /**
      * 流程标识key

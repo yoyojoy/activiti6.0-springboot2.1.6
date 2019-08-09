@@ -55,7 +55,6 @@ public class ActivitiDesignApplicationTests {
         ao.setProcessStarterName("张三");
         ao.setCustomerId("C20191001");
         ao.setCustomerName("测试科技有限公司");
-        ao.setTenantId("pay-dev");
         ao.setProcessDefinitionKey("test-process");
         processService.startProcess(ao);
     }
@@ -68,7 +67,6 @@ public class ActivitiDesignApplicationTests {
         ao.setDealId("gys_user001");
         ao.setDealName("供应商用户001");
         ao.setComment("供应商001批注");
-        ao.setTenantId("pay-dev");
         ao.setDecision(ProcessDecisionEnum.AGREE.getStatus());
         processService.taskProcess(ao);
     }
