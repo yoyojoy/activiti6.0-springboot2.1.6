@@ -107,16 +107,16 @@ public class ProcessService {
         if (StringUtils.isBlank(processDefinitionName)) {
             throw new ServerErrorException("流程名称name不能为空");
         }
-        Deployment deployment = repositoryService.createDeployment()
-                .name(processDefinitionName).addString(fileName, xml)
-                .tenantId(ao.getTenantId())
-                .category(ao.getBusinessType())
-                .key(processDefinitionKey)
-                .deploy();
-        List<Model> olds = repositoryService.createModelQuery().modelKey(processDefinitionKey).modelTenantId(ao.getTenantId()).orderByModelVersion().desc().list();
+        Deployment deployment = repositoryService.createDeployment().name(processDefinitionName).addString(fileName, xml)
+                .tenantId(ao.getTenantId()).category(ao.getBusinessType()).key(processDefinitionKey.toLowerCase()).deploy();
+        if(deployment == null){
+            throw new ServerErrorException("流程部署失败,请检查流程bpmn文件");
+        }
+        //该定义KEY的流程有部署过
+        List<Model> olds = repositoryService.createModelQuery().modelKey(processDefinitionKey.toLowerCase()).
+                modelTenantId(ao.getTenantId()).orderByModelVersion().desc().list();
         Model model = repositoryService.newModel();
         if (!CollectionUtils.isEmpty(olds)) {
-            //该定义KEY的流程有部署过
             model.setVersion(olds.get(0).getVersion() + 1);
         } else {
             model.setVersion(1);
@@ -129,6 +129,24 @@ public class ProcessService {
         repositoryService.saveModel(model);
         log.info("商户{}部署新的流程成功, 流程定义ID: {}", ao.getTenantId(), deployment.getId());
 
+    }
+
+    private Map<String, Object> generateStartVariables(ProcessStartAo ao){
+        Map<String, Object> vars = new HashMap<>();
+        if (!CollectionUtils.isEmpty(ao.getVariables())) {
+            vars.put(ProcessConstant.PROCESS_PARAM, JSON.toJSONString(ao.getVariables()));
+        }
+        //流程的发起人ID
+        vars.put(ProcessConstant.PROCESS_STARTER_ID, ao.getProcessStarterId());
+        //流程的发起人姓名
+        vars.put(ProcessConstant.PROCESS_STARTER_NAME, ao.getProcessStarterName());
+        //客户名称
+        vars.put(ProcessConstant.CUSTOMER_NAME, ao.getCustomerName());
+        //客户ID
+        vars.put(ProcessConstant.CUSTOMER_ID, ao.getCustomerId());
+        //业务名称
+        vars.put(ProcessConstant.BUSINESS_NAME, ao.getBusinessName());
+        return vars;
     }
 
     /**
@@ -156,28 +174,19 @@ public class ProcessService {
         if(!CollectionUtils.isEmpty(historicProcessInstances)){
             throw new ServerErrorException("业务唯一标识businessId已有在途的流程业务");
         }
-        Map<String, Object> vars = new HashMap<>();
-        if (!CollectionUtils.isEmpty(ao.getVariables())) {
-            vars.put(ProcessConstant.PROCESS_PARAM, JSON.toJSONString(ao.getVariables()));
-        }
-        //流程的发起人ID
-        vars.put(ProcessConstant.PROCESS_STARTER_ID, ao.getProcessStarterId());
-        //流程的发起人姓名
-        vars.put(ProcessConstant.PROCESS_STARTER_NAME, ao.getProcessStarterName());
-        //客户名称
-        vars.put(ProcessConstant.CUSTOMER_NAME, ao.getCustomerName());
-        //客户ID
-        vars.put(ProcessConstant.CUSTOMER_ID, ao.getCustomerId());
-        //业务名称
-        vars.put(ProcessConstant.BUSINESS_NAME, ao.getBusinessName());
         ProcessInstance pi = runtimeService.startProcessInstanceByKeyAndTenantId(ao.getProcessDefinitionKey(), ao.getTenantId());
         if (pi == null) {
             throw new ServerErrorException("发起流程失败");
         }
-        log.info("流程发起成功, 流程实例ID: {}", pi.getId());
         runtimeService.updateBusinessKey(pi.getProcessInstanceId(), ao.getBusinessId());
-        Task task = taskService.createTaskQuery().processInstanceId(pi.getProcessInstanceId()).processInstanceBusinessKey(ao.getBusinessId()).taskTenantId(ao.getTenantId()).active().singleResult();
-        runtimeService.setVariables(task.getExecutionId(), vars);
+        //指发起的环节(one)
+        Task task = taskService.createTaskQuery().processInstanceId(pi.getProcessInstanceId())
+                .processInstanceBusinessKey(ao.getBusinessId()).taskTenantId(ao.getTenantId()).active().singleResult();
+        if (task == null) {
+            throw new ServerErrorException("发起流程失败");
+        }
+        log.info("流程发起成功, 流程实例ID: {}", pi.getId());
+        runtimeService.setVariables(task.getExecutionId(), this.generateStartVariables(ao));
         //完成第一个环节,并设置下一个环节的处理人
         this.dealTheFirstTask(ao.getTenantId(), task.getId(), ao.getProcessStarterId(), ao.getProcessStarterName());
         log.info("\n======================流程第一个环节已完成========================\n");
@@ -629,6 +638,12 @@ public class ProcessService {
      * @param ao
      */
     public void taskProcess(CompleteTaskAo ao) {
+        if(StringUtils.isBlank(ao.getTaskId())){
+            throw new ServerErrorException("任务标识taskId不能为空");
+        }
+        if(StringUtils.isBlank(ao.getDealId())){
+            throw new ServerErrorException("任务处理人dealId不能为空");
+        }
         Task task = taskService.createTaskQuery().taskId(ao.getTaskId()).taskTenantId(ao.getTenantId()).active().singleResult();
         if (task == null) {
             throw new ServerErrorException("任务不存在");
