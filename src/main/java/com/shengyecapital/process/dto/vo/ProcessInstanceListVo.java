@@ -24,10 +24,16 @@ public class ProcessInstanceListVo {
     private String currentTaskName;
 
     /**
-     * 创建时间
+     * 流程开始时间
      */
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="GMT+8")
     private Date createTime;
+
+    /**
+     * 流程结束时间
+     */
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="GMT+8")
+    private Date endTime;
 
     /**
      * 业务ID
@@ -38,5 +44,10 @@ public class ProcessInstanceListVo {
      * 流程实例ID
      */
     private String processInstanceId;
+
+    /**
+     * 客户名称
+     */
+    private String customerName;
 
 }

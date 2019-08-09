@@ -2,10 +2,7 @@ package com.shengyecapital.process.controller;
 
 import com.shengyecapital.process.common.PageResult;
 import com.shengyecapital.process.dto.ao.*;
-import com.shengyecapital.process.dto.vo.ProcessCommentVo;
-import com.shengyecapital.process.dto.vo.ProcessDeployedListVo;
-import com.shengyecapital.process.dto.vo.ProcessInstanceListVo;
-import com.shengyecapital.process.dto.vo.ProcessUndoListVo;
+import com.shengyecapital.process.dto.vo.*;
 import com.shengyecapital.process.service.joy.ProcessService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,6 +89,18 @@ public class ProcessManagerController {
     }
 
     /**
+     * 流程文件导出
+     * @param processDefinitionId
+     * @param response
+     */
+    @GetMapping(value = "/process/file/export")
+    public void exportProcessXml(@RequestParam("processDefinitionId") String processDefinitionId,
+                                                @RequestParam("tenantId") String tenantId,
+                                                HttpServletResponse response) {
+        processService.exportProcessFile(processDefinitionId, tenantId, response);
+    }
+
+    /**
      * 查看某个流程实例运行时高亮图
      * @param processInstanceId
      * @param response
@@ -102,15 +111,14 @@ public class ProcessManagerController {
     }
 
     /**
-     * 我已完成但未完结的流程实例列表 AMS-2
+     * 我已完成 的流程实例列表 AMS-2
      * @return
      */
     @PostMapping("/process/instance/unfinished/list")
-    public PageResult<ProcessInstanceListVo> myCompleteUnfinishedProceeList(@RequestHeader("USER_ID") String userId, ProcessInstanceListQueryAo ao) {
+    public PageResult<ProcessInstanceListVo> myCompleteProcesses(@RequestHeader("USER_ID") String userId, ProcessInstanceListQueryAo ao) {
         try {
-            //TODO 从Header中取登录用户信息
             ao.setDealId(userId);
-            return processService.unfinishedProcessInstanceList(ao);
+            return processService.personalCompleteProcessInstanceList(ao);
         }catch (Exception e){
             log.error("查询流程实例列表失败, \n{}", e);
         }
@@ -136,13 +144,28 @@ public class ProcessManagerController {
      * @return
      */
     @PostMapping("/process/task/personal/list")
-    public PageResult<ProcessUndoListVo> findPersonalTaskList(@RequestBody ProcessUndoQueryListAo ao) {
+    public PageResult<ProcessUndoListVo> findPersonalTaskList(@RequestHeader("USER_ID") String userId, @RequestBody ProcessUndoQueryListAo ao) {
         try {
+            String[] ids = ao.getDealIds();
+            if(ids == null || ids.length == 0){
+                ids = new String[]{};
+            }
+            ids[ids.length] = userId;
+            ao.setDealIds(ids);
             return processService.getPersonalUndoTaskList(ao);
         }catch (Exception e){
             log.error("查询流程待办列表失败, \n{}", e);
         }
         return null;
+    }
+
+    /**
+     * 流程任务详情 AMS-4
+      * @param taskId
+     */
+    @PostMapping("/process/task/detail/{taskId}")
+    public ProcessTaskVo taskDetail(@PathVariable String taskId, @PathVariable String tenantId){
+        return processService.getTaskDetail(taskId, tenantId);
     }
 
     /**

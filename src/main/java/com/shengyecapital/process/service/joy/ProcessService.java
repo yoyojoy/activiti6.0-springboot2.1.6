@@ -10,10 +10,7 @@ import com.shengyecapital.process.common.PageResult;
 import com.shengyecapital.process.constant.ProcessConstant;
 import com.shengyecapital.process.dto.ProcessParam;
 import com.shengyecapital.process.dto.ao.*;
-import com.shengyecapital.process.dto.vo.ProcessCommentVo;
-import com.shengyecapital.process.dto.vo.ProcessDeployedListVo;
-import com.shengyecapital.process.dto.vo.ProcessInstanceListVo;
-import com.shengyecapital.process.dto.vo.ProcessUndoListVo;
+import com.shengyecapital.process.dto.vo.*;
 import com.shengyecapital.process.enums.ProcessDecisionEnum;
 import com.shengyecapital.process.exception.ServerErrorException;
 import com.shengyecapital.process.mapper.ActivitiMapper;
@@ -45,6 +42,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -318,18 +316,12 @@ public class ProcessService {
                 List<Task> tasks = taskService.createTaskQuery().processInstanceId(processInstance.getId()).orderByTaskCreateTime().desc().active().list();
                 for (Task task : tasks) {
                     ProcessUndoListVo target = new ProcessUndoListVo();
-                    //流程名称
                     target.setProcessName(processInstance.getProcessDefinitionName());
-                    //业务ID
                     target.setBusinessId(processInstance.getBusinessKey());
-                    //发起人ID
                     target.setProcessStarterId(processStarterId);
-                    //发起人姓名
                     target.setProcessStarterName(processStarterName);
-                    //客户名称
                     target.setCustomerName(customerName);
                     target.setTaskName(task.getName());
-                    //流程发起时间
                     target.setProcessStartTime(processInstance.getStartTime());
                     target.setTaskId(task.getId());
                     return target;
@@ -372,7 +364,7 @@ public class ProcessService {
         if (StringUtils.isNotBlank(ao.getProcessDefinitionName())) {
             query.processDefinitionNameLike(ao.getProcessDefinitionName());
         }
-        List<Task> tasks = query.taskTenantId(ao.getTenantId()).active().includeProcessVariables().orderByTaskCreateTime().asc().list();
+        List<Task> tasks = query.taskTenantId(ao.getTenantId()).active().includeProcessVariables().orderByTaskCreateTime().desc().list();
         if (!CollectionUtils.isEmpty(tasks)) {
             for(Task task : tasks) {
                 if(StringUtils.isNotBlank(task.getAssignee()) && Arrays.asList(ao.getDealIds()).contains(task.getAssignee())) {
@@ -383,22 +375,15 @@ public class ProcessService {
                     String processStarterId = map.get(ProcessConstant.PROCESS_STARTER_ID).toString();
                     String processStarterName = map.get(ProcessConstant.PROCESS_STARTER_NAME).toString();
                     String customerName = map.get(ProcessConstant.CUSTOMER_NAME).toString();
-                    //流程名称
                     target.setProcessName(definition.getName());
-                    //业务ID
                     target.setBusinessId(instance.getBusinessKey());
-                    //发起人ID
                     target.setProcessStarterId(processStarterId);
-                    //发起人姓名
                     target.setProcessStarterName(processStarterName);
-                    //客户名称
                     target.setCustomerName(customerName);
-                    //流程发起时间
                     target.setProcessStartTime(task.getCreateTime());
-                    //环节名称
                     target.setTaskName(task.getName());
-                    //任务ID
                     target.setTaskId(task.getId());
+                    target.setTaskStartTime(task.getCreateTime());
                     result.add(target);
                 }
             }
@@ -433,6 +418,28 @@ public class ProcessService {
             IOUtils.copy(resourceAsStream, response.getOutputStream());
         } catch (IOException e) {
             log.error("查询流程资源失败", e);
+        }
+    }
+
+    /**
+     * 导出流程bpmn文件
+     * @param definitionId
+     * @param tenantId
+     * @param response
+     */
+    public void exportProcessFile(String definitionId, String tenantId, HttpServletResponse response) {
+        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery()
+                .processDefinitionId(definitionId).processDefinitionTenantId(tenantId).singleResult();
+        if (processDefinition == null) {
+            throw new ServerErrorException("流程定义不存在");
+        }
+        InputStream resourceAsStream = repositoryService.getResourceAsStream(processDefinition.getDeploymentId(), processDefinition.getResourceName());
+        try {
+            response.setContentType(MediaType.APPLICATION_XML_VALUE);
+            response.setHeader("content-disposition", "attachment;filename=" + processDefinition.getResourceName());
+            IOUtils.copy(resourceAsStream, response.getOutputStream());
+        } catch (IOException e) {
+            log.error("导出流程资源失败", e);
         }
     }
 
@@ -536,7 +543,7 @@ public class ProcessService {
         }
         Page<ProcessInstanceListVo> page = PageHelper.startPage(ao.getPageNum(), ao.getPageSize());
         StringBuffer sql = new StringBuffer("select DISTINCT c.PROC_INST_ID_ processInstanceId, c.PROC_DEF_ID_ processDefinitionId, a.NAME_ processDefinitionName,b.NAME_ currentTaskName, c.START_TIME_ createTime, " +
-                " c.BUSINESS_KEY_ businessId, d.TEXT_ businessName from ACT_HI_PROCINST c LEFT JOIN ACT_HI_ACTINST t on c.PROC_INST_ID_=t.ID_ " +
+                " c.END_TIME_ endTime, c.BUSINESS_KEY_ businessId, d.TEXT_ businessName from ACT_HI_PROCINST c LEFT JOIN ACT_HI_ACTINST t on c.PROC_INST_ID_=t.ID_ " +
                 " LEFT JOIN ACT_RE_PROCDEF a on a.ID_=c.PROC_DEF_ID_ " +
                 " LEFT JOIN ACT_RU_TASK b on c.PROC_INST_ID_=b.PROC_INST_ID_ and b.PROC_DEF_ID_=c.PROC_DEF_ID_ " +
                 " LEFT JOIN ACT_HI_VARINST d on d.PROC_INST_ID_=c.PROC_INST_ID_ and d.NAME_='business_name' where c.TENANT_ID_='").append(ao.getTenantId()).append("' ");
@@ -567,11 +574,11 @@ public class ProcessService {
     }
 
     /**
-     * '我'完成  但是未完结的流程实例列表
+     * '我'完成 流程实例列表
      * @param ao
      * @return
      */
-    public PageResult<ProcessInstanceListVo> unfinishedProcessInstanceList(ProcessInstanceListQueryAo ao) {
+    public PageResult<ProcessInstanceListVo> personalCompleteProcessInstanceList(ProcessInstanceListQueryAo ao) {
         if(StringUtils.isBlank(ao.getTenantId())){
             throw new ServerErrorException("商户标识tenantId不能为空");
         }
@@ -596,6 +603,12 @@ public class ProcessService {
         }
         if (StringUtils.isNotBlank(ao.getCurrentTaskName())) {
             sql.append("and b.NAME_ like concat(%,").append(ao.getCurrentTaskName()).append(" %) ");
+        }
+        if(ao.getIsFinished()){
+            sql.append("and c.END_TIME_ is not null and c.END_TIME_ != '' ");
+        }
+        if(!ao.getIsFinished()){
+            sql.append("and (c.END_TIME_ is null or c.END_TIME_ = '') ");
         }
         List<ProcessInstanceListVo> list = activitiMapper.queryRuntimeInstanceInfoList(sql.toString());
         PageResult<ProcessInstanceListVo> pageResult = new PageResult<>();
@@ -710,4 +723,44 @@ public class ProcessService {
         }
     }
 
+    /**
+     * 任务详情查看
+     * @param taskId
+     * @param tenantId
+     * @return
+     */
+    public ProcessTaskVo getTaskDetail(String taskId, String tenantId){
+        Task task = taskService.createTaskQuery().taskId(taskId).taskTenantId(tenantId).includeProcessVariables().active().singleResult();
+        if(task == null){
+            throw new ServerErrorException("任务不存在");
+        }
+        ProcessInstance instance = runtimeService.createProcessInstanceQuery().processInstanceId(task.getProcessInstanceId())
+                .processInstanceTenantId(tenantId).active().singleResult();
+        Map<String, Object> map = task.getProcessVariables();
+        ProcessTaskVo result = new ProcessTaskVo();
+        result.setDealer(this.generateTaskDealStr(task.getAssignee(), task.getName()));
+        result.setAction("apply".equalsIgnoreCase(task.getTaskDefinitionKey()) ? "申请" : "审批");
+        result.setProcessStarterName(map.get(ProcessConstant.PROCESS_STARTER_NAME).toString());
+        result.setProcessStartTime(instance.getStartTime());
+        result.setTaskName(task.getName());
+        result.setTaskStartTime(task.getCreateTime());
+        result.setBusinessId(instance.getBusinessKey());
+        return result;
+    }
+
+    private String generateTaskDealStr(String assignee, String name){
+        StringBuffer sb = new StringBuffer();
+        if(StringUtils.isNotBlank(assignee)){
+            if(assignee.startsWith("USER")){
+                sb.append("[用户]: ");
+            }
+            if(assignee.startsWith("USER")){
+                sb.append("[角色]: ");
+            }
+            if(assignee.startsWith("USER")){
+                sb.append("[企业]: ");
+            }
+        }
+        return sb.append(" ").append(name).toString();
+    }
 }

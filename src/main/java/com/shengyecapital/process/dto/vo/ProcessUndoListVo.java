@@ -45,6 +45,12 @@ public class ProcessUndoListVo {
     private Date processStartTime;
 
     /**
+     * 任务生成时间
+     */
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="GMT+8")
+    private Date taskStartTime;
+
+    /**
      * 任务ID
      */
     private String taskId;
