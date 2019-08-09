@@ -149,6 +149,12 @@ public class ProcessService {
         if (StringUtils.isBlank(ao.getTenantId())) {
             throw new ServerErrorException("商户标识tenantId不能为空");
         }
+        // 是否需要判重呢?
+        List<HistoricProcessInstance> historicProcessInstances= historyService.createHistoricProcessInstanceQuery()
+                .processDefinitionKey(ao.getProcessDefinitionKey()).processInstanceBusinessKey(ao.getBusinessId()).list();
+        if(!CollectionUtils.isEmpty(historicProcessInstances)){
+            throw new ServerErrorException("业务唯一标识businessId已有在途的流程业务");
+        }
         Map<String, Object> vars = new HashMap<>();
         if (!CollectionUtils.isEmpty(ao.getVariables())) {
             vars.put(ProcessConstant.PROCESS_PARAM, JSON.toJSONString(ao.getVariables()));
