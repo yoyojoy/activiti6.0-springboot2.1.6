@@ -151,7 +151,8 @@ public class ProcessService {
         }
         // 是否需要判重呢?
         List<HistoricProcessInstance> historicProcessInstances= historyService.createHistoricProcessInstanceQuery()
-                .processDefinitionKey(ao.getProcessDefinitionKey()).processInstanceBusinessKey(ao.getBusinessId()).list();
+                .processDefinitionKey(ao.getProcessDefinitionKey()).processInstanceBusinessKey(ao.getBusinessId())
+                .processInstanceTenantId(ao.getTenantId()).list();
         if(!CollectionUtils.isEmpty(historicProcessInstances)){
             throw new ServerErrorException("业务唯一标识businessId已有在途的流程业务");
         }
