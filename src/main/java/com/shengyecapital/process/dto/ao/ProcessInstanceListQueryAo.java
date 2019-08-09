@@ -3,8 +3,11 @@ package com.shengyecapital.process.dto.ao;
 import com.shengyecapital.process.common.BasePageDto;
 import lombok.Data;
 
+/**
+ * 流程实例列表查询条件
+ */
 @Data
-public class RuntimeInstanceListQueryAo extends BasePageDto {
+public class ProcessInstanceListQueryAo extends BasePageDto {
 
     /**
      * 流程名称
@@ -29,5 +32,15 @@ public class RuntimeInstanceListQueryAo extends BasePageDto {
      * 商户ID
      */
     private String tenantId;
+
+    /**
+     * 是否完结
+     */
+    private Boolean isFinished = false;
+
+    /**
+     * 处理人 AMS-2
+     */
+    private String dealId;
 
 }

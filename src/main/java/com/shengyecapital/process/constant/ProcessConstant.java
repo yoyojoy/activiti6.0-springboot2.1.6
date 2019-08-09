@@ -30,4 +30,9 @@ public class ProcessConstant {
      */
     public static final String PROCESS_PARAM = "process_param";
 
+    /**
+     * 流程实例关联的业务名称
+     */
+    public static final String BUSINESS_NAME = "business_name";
+
 }

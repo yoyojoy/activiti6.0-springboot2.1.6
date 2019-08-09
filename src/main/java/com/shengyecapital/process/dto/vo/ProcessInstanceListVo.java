@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class RuntimeInstanceListVo {
+public class ProcessInstanceListVo {
 
     /**
      * 业务对象名称

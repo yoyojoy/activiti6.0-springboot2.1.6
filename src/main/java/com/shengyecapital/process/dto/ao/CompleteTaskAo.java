@@ -30,6 +30,6 @@ public class CompleteTaskAo extends BaseEnvVo {
     /**
      * 任务处理决策(默认直接走'通过')
      */
-    private Integer decision = ProcessDecisionEnum.PASS.getStatus();
+    private Integer decision = ProcessDecisionEnum.AGREE.getStatus();
 
 }

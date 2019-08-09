@@ -5,17 +5,21 @@ package com.shengyecapital.process.enums;
  */
 public enum ProcessDecisionEnum {
     /**
-     * 通过
+     * 同意
      */
-    PASS(1),
+    AGREE(1),
     /**
      * 退回
      */
     RETURN(2),
     /**
-     * 拒绝
+     * 驳回
      */
-    REJECT(3);
+    REJECT(3),
+    /**
+     * 终止
+     */
+    TERMINATE(4);
 
     private Integer status;
 

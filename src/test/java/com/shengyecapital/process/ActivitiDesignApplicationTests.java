@@ -8,6 +8,7 @@ import com.shengyecapital.process.service.joy.ProcessService;
 import com.shengyecapital.process.service.joy.ProcessUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.model.FlowElement;
+import org.activiti.engine.HistoryService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
@@ -32,6 +33,8 @@ public class ActivitiDesignApplicationTests {
     @Autowired
     private RepositoryService repositoryService;
     @Autowired
+    private HistoryService historyService;
+    @Autowired
     private ProcessUtil processUtil;
 
     @Test
@@ -40,7 +43,7 @@ public class ActivitiDesignApplicationTests {
         String tenantId = "pay-dev";
         System.out.println("\n=========================================\n");
         Task task = taskService.createTaskQuery().taskId(taskId).taskTenantId(tenantId).singleResult();
-        FlowElement next = processUtil.getNextTaskElement(task, ProcessDecisionEnum.PASS);
+        FlowElement next = processUtil.getNextTaskElement(task, ProcessDecisionEnum.AGREE);
         System.out.println(JSON.toJSONString(next));
     }
 
@@ -66,7 +69,7 @@ public class ActivitiDesignApplicationTests {
         ao.setDealName("供应商用户001");
         ao.setComment("供应商001批注");
         ao.setTenantId("pay-dev");
-        ao.setDecision(ProcessDecisionEnum.PASS.getStatus());
+        ao.setDecision(ProcessDecisionEnum.AGREE.getStatus());
         processService.taskProcess(ao);
     }
 
