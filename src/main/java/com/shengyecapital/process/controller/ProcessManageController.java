@@ -15,7 +15,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-public class ProcessManagerController {
+public class ProcessManageController {
 
     @Autowired
     private ProcessService processService;
