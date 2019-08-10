@@ -3,6 +3,8 @@ package com.shengyecapital.process.dto.ao;
 import com.shengyecapital.process.common.BasePageDto;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class ProcessUndoQueryListAo extends BasePageDto {
 
@@ -29,5 +31,5 @@ public class ProcessUndoQueryListAo extends BasePageDto {
      * 处理的ID结合
      * 可以类似于以下id: USER1001, ROLE5214, CUSTOM9527
      */
-    private String[] dealIds;
+    private List<String> dealIds;
 }

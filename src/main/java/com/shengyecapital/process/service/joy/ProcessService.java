@@ -348,9 +348,6 @@ public class ProcessService {
         if(StringUtils.isBlank(ao.getTenantId())){
             throw new ServerErrorException("商户标志tenantId不能为空");
         }
-        if (ao.getDealIds() == null || ao.getDealIds().length == 0) {
-            throw new ServerErrorException("查询个人待办缺少必须参数");
-        }
         Page<ProcessUndoListVo> page = PageHelper.startPage(ao.getPageNum(), ao.getPageSize());
         List<ProcessUndoListVo> result = new ArrayList<>();
         TaskQuery query = taskService.createTaskQuery();

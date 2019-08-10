@@ -6,9 +6,11 @@ import com.shengyecapital.process.dto.vo.*;
 import com.shengyecapital.process.service.joy.ProcessService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -146,11 +148,11 @@ public class ProcessManagerController {
     @PostMapping("/process/task/personal/list")
     public PageResult<ProcessUndoListVo> findPersonalTaskList(@RequestHeader("USER_ID") String userId, @RequestBody ProcessUndoQueryListAo ao) {
         try {
-            String[] ids = ao.getDealIds();
-            if(ids == null || ids.length == 0){
-                ids = new String[]{};
+            List<String> ids = ao.getDealIds();
+            if(CollectionUtils.isEmpty(ids)){
+                ids = new ArrayList<>();
             }
-            ids[ids.length] = userId;
+            ids.add(userId);
             ao.setDealIds(ids);
             return processService.getPersonalUndoTaskList(ao);
         }catch (Exception e){
