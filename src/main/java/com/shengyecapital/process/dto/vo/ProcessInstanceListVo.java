@@ -50,4 +50,9 @@ public class ProcessInstanceListVo {
      */
     private String customerName;
 
+    /**
+     * 流程状态
+     */
+    private String status;
+
 }

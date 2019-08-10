@@ -543,11 +543,11 @@ public class ProcessService {
             throw new ServerErrorException("商户标识tenantId不能为空");
         }
         Page<ProcessInstanceListVo> page = PageHelper.startPage(ao.getPageNum(), ao.getPageSize());
-        StringBuffer sql = new StringBuffer("select DISTINCT c.PROC_INST_ID_ processInstanceId, c.PROC_DEF_ID_ processDefinitionId, a.NAME_ processDefinitionName,b.NAME_ currentTaskName, c.START_TIME_ createTime, " +
-                " c.END_TIME_ endTime, c.BUSINESS_KEY_ businessId, d.TEXT_ businessName from ACT_HI_PROCINST c LEFT JOIN ACT_HI_ACTINST t on c.PROC_INST_ID_=t.ID_ " +
-                " LEFT JOIN ACT_RE_PROCDEF a on a.ID_=c.PROC_DEF_ID_ " +
-                " LEFT JOIN ACT_RU_TASK b on c.PROC_INST_ID_=b.PROC_INST_ID_ and b.PROC_DEF_ID_=c.PROC_DEF_ID_ " +
-                " LEFT JOIN ACT_HI_VARINST d on d.PROC_INST_ID_=c.PROC_INST_ID_ and d.NAME_='business_name' where c.TENANT_ID_='").append(ao.getTenantId()).append("' ");
+        StringBuffer sql = new StringBuffer("select DISTINCT c.PROC_INST_ID_ processInstanceId, c.PROC_DEF_ID_ processDefinitionId, a.NAME_ processDefinitionName,b.NAME_ currentTaskName, c.START_TIME_ createTime, \n" +
+                "   c.END_TIME_ endTime, c.BUSINESS_KEY_ businessId, d.TEXT_ businessName, (case when t.END_TIME_ is null or t.END_TIME_ ='' then '未完结' ELSE '已完结' end) status \n" +
+                "from ACT_HI_PROCINST c LEFT JOIN ACT_HI_ACTINST t on c.PROC_INST_ID_=t.ID_  LEFT JOIN ACT_RE_PROCDEF a on a.ID_=c.PROC_DEF_ID_ \n" +
+                "LEFT JOIN ACT_RU_TASK b on c.PROC_INST_ID_=b.PROC_INST_ID_ and b.PROC_DEF_ID_=c.PROC_DEF_ID_ \n" +
+                "LEFT JOIN ACT_HI_VARINST d on d.PROC_INST_ID_=c.PROC_INST_ID_ and d.NAME_='business_name' where c.TENANT_ID_='").append(ao.getTenantId()).append("' ");
         if (StringUtils.isNotBlank(ao.getProcessDefinitionName())) {
             sql.append("and a.NAME_ like concat(%,").append(ao.getProcessDefinitionName()).append(" %) ");
         }
