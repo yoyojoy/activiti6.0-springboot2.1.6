@@ -13,8 +13,18 @@ public class DeploymentAo extends BaseEnvVo {
     private MultipartFile file;
 
     /**
-     * 业务类别 (登记/回款/业务开通/...)
+     * 业务类型 (ukey申请/企业信息审核/企业认证/...)
      */
     private String businessType;
+
+    /**
+     * 流程定义key
+     */
+    private String processKey;
+
+    /**
+     * 流程定义名称
+     */
+    private String processName;
 
 }

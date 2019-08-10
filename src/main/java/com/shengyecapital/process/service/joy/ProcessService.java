@@ -87,6 +87,9 @@ public class ProcessService {
         if (ao.getFile() == null) {
             throw new ServerErrorException("流程文件不能为空");
         }
+        if (StringUtils.isBlank(ao.getProcessName())) {
+            throw new ServerErrorException("流程名称name不能为空");
+        }
         MultipartFile file = ao.getFile();
         String fileName = file.getOriginalFilename();
         InputStream in = file.getInputStream();
@@ -98,14 +101,13 @@ public class ProcessService {
             throw new ServerErrorException("流程配置文件有错误, 没有定义流程");
         }
         String processDefinitionKey = process.attribute("id").getValue();
-        String processDefinitionName = process.attribute("name").getValue();
+        if(StringUtils.isNotBlank(ao.getProcessKey()) && !ao.getProcessKey().equalsIgnoreCase(processDefinitionKey)){
+            throw new ServerErrorException("输入的流程关键字和流程文件中定义的关键字不一致");
+        }
         if (StringUtils.isBlank(processDefinitionKey)) {
             throw new ServerErrorException("流程定义id不能为空");
         }
-        if (StringUtils.isBlank(processDefinitionName)) {
-            throw new ServerErrorException("流程名称name不能为空");
-        }
-        Deployment deployment = repositoryService.createDeployment().name(processDefinitionName).addString(fileName, xml)
+        Deployment deployment = repositoryService.createDeployment().name(ao.getProcessName()).addString(fileName, xml)
                 .tenantId(ao.getTenantId()).category(ao.getBusinessType()).key(processDefinitionKey.toLowerCase()).deploy();
         if(deployment == null){
             throw new ServerErrorException("流程部署失败,请检查流程bpmn文件");
@@ -119,7 +121,7 @@ public class ProcessService {
         } else {
             model.setVersion(1);
         }
-        model.setName(processDefinitionName);
+        model.setName(ao.getProcessName());
         model.setKey(processDefinitionKey);
         model.setCategory(ao.getBusinessType());
         model.setDeploymentId(deployment.getId());
