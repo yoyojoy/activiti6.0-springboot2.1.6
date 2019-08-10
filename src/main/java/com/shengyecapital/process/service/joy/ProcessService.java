@@ -108,7 +108,7 @@ public class ProcessService {
             throw new ServerErrorException("流程定义id不能为空");
         }
         Deployment deployment = repositoryService.createDeployment().name(ao.getProcessName()).addString(fileName, xml)
-                .tenantId(ao.getTenantId()).category(ao.getBusinessType()).key(processDefinitionKey.toLowerCase()).deploy();
+                .tenantId(ao.getTenantId()).category(ao.getBusinessName()).key(processDefinitionKey.toLowerCase()).deploy();
         if(deployment == null){
             throw new ServerErrorException("流程部署失败,请检查流程bpmn文件");
         }
@@ -123,7 +123,7 @@ public class ProcessService {
         }
         model.setName(ao.getProcessName());
         model.setKey(processDefinitionKey);
-        model.setCategory(ao.getBusinessType());
+        model.setCategory(ao.getBusinessName());
         model.setDeploymentId(deployment.getId());
         model.setTenantId(ao.getTenantId());
         repositoryService.saveModel(model);
@@ -587,7 +587,8 @@ public class ProcessService {
         }
         Page<ProcessInstanceListVo> page = PageHelper.startPage(ao.getPageNum(), ao.getPageSize());
         StringBuffer sql = new StringBuffer("select DISTINCT c.PROC_INST_ID_ processInstanceId, c.PROC_DEF_ID_ processDefinitionId, a.NAME_ processDefinitionName,b.NAME_ currentTaskName, c.START_TIME_ createTime, " +
-                " c.BUSINESS_KEY_ businessId, d.TEXT_ businessName from ACT_HI_PROCINST c LEFT JOIN ACT_HI_ACTINST t on c.PROC_INST_ID_=t.ID_ " +
+                " c.BUSINESS_KEY_ businessId, d.TEXT_ businessName, c.END_TIME_ endTime, (case when t.END_TIME_ is null or t.END_TIME_ ='' then '未完结' ELSE '已完结' end) status " +
+                " from ACT_HI_PROCINST c LEFT JOIN ACT_HI_ACTINST t on c.PROC_INST_ID_=t.ID_ " +
                 " LEFT JOIN ACT_RE_PROCDEF a on a.ID_=c.PROC_DEF_ID_ " +
                 " LEFT JOIN ACT_RU_TASK b on c.PROC_INST_ID_=b.PROC_INST_ID_ and b.PROC_DEF_ID_=c.PROC_DEF_ID_ " +
                 " LEFT JOIN ACT_HI_VARINST d on d.PROC_INST_ID_=c.PROC_INST_ID_ and d.NAME_='business_name' where" +

@@ -15,7 +15,7 @@ public class DeploymentAo extends BaseEnvVo {
     /**
      * 业务类型 (ukey申请/企业信息审核/企业认证/...)
      */
-    private String businessType;
+    private String businessName;
 
     /**
      * 流程定义key

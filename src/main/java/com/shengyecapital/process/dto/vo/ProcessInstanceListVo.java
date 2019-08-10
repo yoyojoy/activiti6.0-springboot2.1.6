@@ -46,11 +46,6 @@ public class ProcessInstanceListVo {
     private String processInstanceId;
 
     /**
-     * 客户名称
-     */
-    private String customerName;
-
-    /**
      * 流程状态
      */
     private String status;
