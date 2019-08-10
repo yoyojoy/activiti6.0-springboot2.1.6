@@ -146,7 +146,7 @@ public class ProcessManagerController {
      * @return
      */
     @PostMapping("/process/task/personal/list")
-    public PageResult<ProcessUndoListVo> findPersonalTaskList(@RequestHeader("USER_ID") String userId, @RequestBody ProcessUndoQueryListAo ao) {
+    public PageResult<ProcessUndoListVo> findPersonalTaskList(@RequestHeader("USER_ID") String userId, ProcessUndoQueryListAo ao) {
         try {
             List<String> ids = ao.getDealIds();
             if(CollectionUtils.isEmpty(ids)){
