@@ -753,13 +753,11 @@ public class ProcessService {
         StringBuffer sb = new StringBuffer();
         if(StringUtils.isNotBlank(assignee)){
             if(assignee.startsWith("USER")){
-                sb.append("[用户]: ");
-            }
-            if(assignee.startsWith("USER")){
-                sb.append("[角色]: ");
-            }
-            if(assignee.startsWith("USER")){
-                sb.append("[企业]: ");
+                sb.append("[用户]:");
+            }else if(assignee.startsWith("ROLE")){
+                sb.append("[角色]:");
+            }else if(assignee.startsWith("CUSTOM")){
+                sb.append("[企业]:");
             }
         }
         return sb.append(" ").append(name).toString();

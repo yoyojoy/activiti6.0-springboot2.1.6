@@ -161,10 +161,9 @@ public class ProcessManagerController {
 
     /**
      * 流程任务详情 AMS-4
-      * @param taskId
      */
-    @PostMapping("/process/task/detail/{taskId}")
-    public ProcessTaskVo taskDetail(@PathVariable String taskId, @PathVariable String tenantId){
+    @GetMapping("/process/task/detail")
+    public ProcessTaskVo taskDetail(@RequestParam String taskId, @RequestParam String tenantId){
         return processService.getTaskDetail(taskId, tenantId);
     }
 
