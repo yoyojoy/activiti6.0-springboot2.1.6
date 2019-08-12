@@ -36,4 +36,9 @@ public class ProcessCommentVo {
      * 操作名称
      */
     private String action;
+
+    /**
+     * 商户ID
+     */
+    private String tenantId;
 }

@@ -60,4 +60,9 @@ public class ProcessUndoListVo {
      */
     private String processInstanceId;
 
+    /**
+     * 商户ID
+     */
+    private String tenantId;
+
 }

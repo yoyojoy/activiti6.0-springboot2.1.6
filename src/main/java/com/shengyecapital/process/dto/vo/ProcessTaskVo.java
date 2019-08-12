@@ -41,4 +41,9 @@ public class ProcessTaskVo {
      */
     private String businessId;
 
+    /**
+     * 商户ID
+     */
+    private String tenantId;
+
 }

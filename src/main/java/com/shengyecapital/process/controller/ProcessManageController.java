@@ -85,9 +85,8 @@ public class ProcessManageController {
     @GetMapping(value = "/process/file/view")
     public void getProcessXml(@RequestParam("processDefinitionId") String processDefinitionId,
                                                 @RequestParam("resourceType") String resourceType,
-                                                @RequestParam("tenantId") String tenantId,
                                                 HttpServletResponse response) {
-        processService.viewProcessDeployResource(processDefinitionId, tenantId, resourceType, response);
+        processService.viewProcessDeployResource(processDefinitionId, resourceType, response);
     }
 
     /**
@@ -96,10 +95,8 @@ public class ProcessManageController {
      * @param response
      */
     @GetMapping(value = "/process/file/export")
-    public void exportProcessXml(@RequestParam("processDefinitionId") String processDefinitionId,
-                                                @RequestParam("tenantId") String tenantId,
-                                                HttpServletResponse response) {
-        processService.exportProcessFile(processDefinitionId, tenantId, response);
+    public void exportProcessXml(@RequestParam("processDefinitionId") String processDefinitionId, HttpServletResponse response) {
+        processService.exportProcessFile(processDefinitionId, response);
     }
 
     /**
@@ -164,9 +161,9 @@ public class ProcessManageController {
     /**
      * 流程任务详情 AMS-4
      */
-    @GetMapping("/process/task/detail")
-    public ProcessTaskVo taskDetail(@RequestParam String taskId, @RequestParam String tenantId){
-        return processService.getTaskDetail(taskId, tenantId);
+    @GetMapping("/process/task/detail/{taskId}")
+    public ProcessTaskVo taskDetail(@PathVariable String taskId){
+        return processService.getTaskDetail(taskId);
     }
 
     /**
@@ -188,8 +185,8 @@ public class ProcessManageController {
      * @return
      */
     @GetMapping("/process/comment/list")
-    public List<ProcessCommentVo> findProcessInstanceComments(@RequestParam("processInstanceId") String processInstanceId, @RequestParam("tenantId") String tenantId) {
-        return processService.getProcessComments(processInstanceId, tenantId);
+    public List<ProcessCommentVo> findProcessInstanceComments(@RequestParam("processInstanceId") String processInstanceId) {
+        return processService.getProcessComments(processInstanceId);
     }
 
     /**

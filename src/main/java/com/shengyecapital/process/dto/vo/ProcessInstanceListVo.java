@@ -9,6 +9,11 @@ import java.util.Date;
 public class ProcessInstanceListVo {
 
     /**
+     * 商户ID
+     */
+    private String tenantId;
+
+    /**
      * 业务对象名称
      */
     private String businessName;

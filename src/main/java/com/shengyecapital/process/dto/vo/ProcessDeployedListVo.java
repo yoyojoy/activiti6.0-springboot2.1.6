@@ -44,4 +44,9 @@ public class ProcessDeployedListVo {
      */
     private String deploymentId;
 
+    /**
+     * 商户ID
+     */
+    private String tenantId;
+
 }
