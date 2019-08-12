@@ -4,6 +4,7 @@ import com.shengyecapital.process.common.PageResult;
 import com.shengyecapital.process.dto.ao.*;
 import com.shengyecapital.process.dto.vo.*;
 import com.shengyecapital.process.service.joy.ProcessService;
+import com.shengyecapital.process.service.process.AfterCompanyUKeyAudit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
@@ -194,7 +195,7 @@ public class ProcessManageController {
      */
     @PostMapping("/process/task/complete")
     public void taskProcess(@RequestBody CompleteTaskAo ao){
-        processService.taskProcess(ao);
+        processService.taskProcess(ao, new AfterCompanyUKeyAudit());
     }
 
 }

@@ -2,7 +2,6 @@ package com.shengyecapital.process.service.joy;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.JSONPath;
 import com.alibaba.fastjson.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
@@ -16,6 +15,7 @@ import com.shengyecapital.process.dto.vo.*;
 import com.shengyecapital.process.enums.ProcessDecisionEnum;
 import com.shengyecapital.process.exception.ServerErrorException;
 import com.shengyecapital.process.mapper.ActivitiMapper;
+import com.shengyecapital.process.service.process.AfterTaskDealCallback;
 import com.shengyecapital.process.util.DateTimeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.activiti.bpmn.model.BpmnModel;
@@ -53,7 +53,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -206,7 +205,7 @@ public class ProcessService {
         ao.setComment("发起流程,提交申请");
         ao.setTaskId(taskId);
         ao.setDecision(ProcessDecisionEnum.AGREE.getStatus());
-        this.taskProcess(ao);
+        this.taskProcess(ao, null);
     }
 
     /**
@@ -648,7 +647,7 @@ public class ProcessService {
      *
      * @param ao
      */
-    public void taskProcess(CompleteTaskAo ao) {
+    public void taskProcess(CompleteTaskAo ao, AfterTaskDealCallback afterTaskDealCallback) {
         if (StringUtils.isBlank(ao.getTaskId())) {
             throw new ServerErrorException("任务标识taskId不能为空");
         }
@@ -680,8 +679,12 @@ public class ProcessService {
         taskService.complete(task.getId(), vars);
         if (nextElement != null) {
             this.setNextUser(nextElement.getId(), task.getProcessInstanceId(), vars);
-            //推mq
+            //推mq 方式1
             this.pushMQ(processInstance.getProcessInstanceId(), processInstance.getBusinessKey(), processInstance.getTenantId(), nextElement.getId(), decisionEnum);
+            //以接口进行直接回调 方式2
+            if(afterTaskDealCallback != null){
+                afterTaskDealCallback.execute(decisionEnum, processInstance.getBusinessKey());
+            }
         }
     }
 

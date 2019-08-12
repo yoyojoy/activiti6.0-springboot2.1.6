@@ -11,7 +11,7 @@ public class RabbitConfig {
 
     @Bean
     public Queue invoiceCheckCallbackQueue() {
-        return new Queue(ProcessConstant.PROCESS_AFTER_TASK_COMPLETE);
+        return new Queue(ProcessConstant.PROCESS_TASK_COMPLETE_AFTER);
     }
 
 }

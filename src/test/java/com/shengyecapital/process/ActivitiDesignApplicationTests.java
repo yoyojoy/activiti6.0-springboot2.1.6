@@ -70,7 +70,7 @@ public class ActivitiDesignApplicationTests {
         ao.setComment("供应商001批注");
         ao.setTenantId("pay-dev");
         ao.setDecision(ProcessDecisionEnum.AGREE.getStatus());
-        processService.taskProcess(ao);
+        processService.taskProcess(ao, null);
     }
 
 }
