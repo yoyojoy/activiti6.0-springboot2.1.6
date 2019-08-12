@@ -724,7 +724,10 @@ public class ProcessService {
                 throw new ServerErrorException("环节任务数量和处理人数量不一致,请检查任务环节");
             }
             for (int a = 0; a < currentTasks.size(); a++) {
-                taskService.setAssignee(currentTasks.get(a).getId(), userIds.get(a));
+                Task task = currentTasks.get(a);
+                if(StringUtils.isBlank(task.getAssignee())){
+                    taskService.setAssignee(task.getId(), userIds.get(a));
+                }
             }
         }
     }
