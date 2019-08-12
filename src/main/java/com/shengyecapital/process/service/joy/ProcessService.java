@@ -680,15 +680,15 @@ public class ProcessService {
         taskService.complete(task.getId(), vars);
         if (nextElement != null) {
             this.setNextUser(nextElement.getId(), task.getProcessInstanceId(), vars);
+            //推mq
+            this.pushMQ(processInstance.getProcessInstanceId(), processInstance.getBusinessKey(), processInstance.getTenantId(), nextElement.getId(), decisionEnum);
         }
-        //推mq
-        this.pushMQ(processInstance.getProcessInstanceId(), processInstance.getBusinessKey(), processInstance.getTenantId());
     }
 
-    private void pushMQ(String processInstanceId, String businessId, String tenantId){
-        TaskCompleteMQDto dto = new TaskCompleteMQDto(processInstanceId, businessId, tenantId);
+    private void pushMQ(String processInstanceId, String businessId, String tenantId, String taskKey, ProcessDecisionEnum decision){
+        TaskCompleteMQDto dto = new TaskCompleteMQDto(processInstanceId, businessId, tenantId, taskKey, decision);
         //发送mq, 供业务方法消费后调整业务状态
-        rabbitTemplate.convertAndSend(ProcessConstant.PROCESS_AFTER_TASK_COMPLETE, JSON.toJSONString(dto));
+        rabbitTemplate.convertAndSend(ProcessConstant.PROCESS_TASK_COMPLETE_AFTER, JSON.toJSONString(dto));
     }
 
     private List<String> getTargetDealerList(String taskKey, Map<String, Object> processVariables) {

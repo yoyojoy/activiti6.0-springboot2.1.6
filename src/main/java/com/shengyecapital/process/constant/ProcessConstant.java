@@ -38,6 +38,6 @@ public class ProcessConstant {
     /**
      * 工作流某任务处理完成后供业务端消费队列
      */
-    public static final String PROCESS_AFTER_TASK_COMPLETE = "process_after_task_complete";
+    public static final String PROCESS_TASK_COMPLETE_AFTER = "process_task_complete_after";
 
 }
