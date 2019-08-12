@@ -2,6 +2,7 @@ package com.shengyecapital.process.service.joy;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONPath;
 import com.alibaba.fastjson.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
@@ -9,6 +10,7 @@ import com.github.pagehelper.PageHelper;
 import com.shengyecapital.process.common.PageResult;
 import com.shengyecapital.process.constant.ProcessConstant;
 import com.shengyecapital.process.dto.ProcessParam;
+import com.shengyecapital.process.dto.TaskCompleteMQDto;
 import com.shengyecapital.process.dto.ao.*;
 import com.shengyecapital.process.dto.vo.*;
 import com.shengyecapital.process.enums.ProcessDecisionEnum;
@@ -41,6 +43,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -74,6 +77,8 @@ public class ProcessService {
     private ActivitiMapper activitiMapper;
     @Autowired
     private ProcessUtil processUtil;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     /**
      * 热部署流程
@@ -536,7 +541,7 @@ public class ProcessService {
                 "LEFT JOIN ACT_RU_TASK b on c.PROC_INST_ID_=b.PROC_INST_ID_ and b.PROC_DEF_ID_=c.PROC_DEF_ID_ \n" +
                 "LEFT JOIN ACT_HI_VARINST d on d.PROC_INST_ID_=c.PROC_INST_ID_ and d.NAME_='business_name' ");
         if (StringUtils.isNotBlank(ao.getTenantId())) {
-            sql.append("and c.tenantId='").append(ao.getTenantId()).append("' ");
+            sql.append("and c.TENANT_ID_='").append(ao.getTenantId()).append("' ");
         }
         if (StringUtils.isNotBlank(ao.getProcessDefinitionName())) {
             sql.append("and a.NAME_ like concat(%,").append(ao.getProcessDefinitionName()).append(" %) ");
@@ -676,6 +681,14 @@ public class ProcessService {
         if (nextElement != null) {
             this.setNextUser(nextElement.getId(), task.getProcessInstanceId(), vars);
         }
+        //推mq
+        this.pushMQ(processInstance.getProcessInstanceId(), processInstance.getBusinessKey(), processInstance.getTenantId());
+    }
+
+    private void pushMQ(String processInstanceId, String businessId, String tenantId){
+        TaskCompleteMQDto dto = new TaskCompleteMQDto(processInstanceId, businessId, tenantId);
+        //发送mq, 供业务方法消费后调整业务状态
+        rabbitTemplate.convertAndSend(ProcessConstant.PROCESS_AFTER_TASK_COMPLETE, JSON.toJSONString(dto));
     }
 
     private List<String> getTargetDealerList(String taskKey, Map<String, Object> processVariables) {

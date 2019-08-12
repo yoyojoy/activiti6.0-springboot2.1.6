@@ -35,4 +35,9 @@ public class ProcessConstant {
      */
     public static final String BUSINESS_NAME = "business_name";
 
+    /**
+     * 工作流某任务处理完成后供业务端消费队列
+     */
+    public static final String PROCESS_AFTER_TASK_COMPLETE = "process_after_task_complete";
+
 }
