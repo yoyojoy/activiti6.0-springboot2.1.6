@@ -47,6 +47,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -159,6 +160,7 @@ public class ProcessService {
      *
      * @param ao
      */
+    @Transactional(rollbackFor = Exception.class)
     public void startProcess(ProcessStartAo ao) {
         if (StringUtils.isBlank(ao.getBusinessId())) {
             throw new ServerErrorException("业务唯一标识businessId不能为空");
@@ -647,6 +649,7 @@ public class ProcessService {
      *
      * @param ao
      */
+    @Transactional(rollbackFor = Exception.class)
     public void taskProcess(CompleteTaskAo ao, AfterTaskDealCallback afterTaskDealCallback) {
         if (StringUtils.isBlank(ao.getTaskId())) {
             throw new ServerErrorException("任务标识taskId不能为空");
