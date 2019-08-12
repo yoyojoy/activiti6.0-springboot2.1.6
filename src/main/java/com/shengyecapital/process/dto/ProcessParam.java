@@ -11,6 +11,11 @@ public class ProcessParam {
     private String key;
 
     /**
+     *  对应到ProcessIdentityEnum类中的针对企业的身份标识定义
+     */
+    private String customIdentity;
+
+    /**
      * 当对应环节key的处理人是动态指定时
      * 需要指定该字段的值
      * 用户以"USER"开头, 例: USER1001
