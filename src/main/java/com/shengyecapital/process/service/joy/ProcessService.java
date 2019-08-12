@@ -682,12 +682,12 @@ public class ProcessService {
         taskService.complete(task.getId(), vars);
         if (nextElement != null) {
             this.setNextUser(nextElement.getId(), task.getProcessInstanceId(), vars);
-            //推mq 方式1
-            this.pushMQ(processInstance.getProcessInstanceId(), processInstance.getBusinessKey(), processInstance.getTenantId(), nextElement.getId(), decisionEnum);
-            //以接口进行直接回调 方式2
+            //以接口进行直接回调 方式1
             if(afterTaskDealCallback != null){
                 afterTaskDealCallback.execute(decisionEnum, processInstance.getBusinessKey());
             }
+            //推mq 方式2
+            //this.pushMQ(processInstance.getProcessInstanceId(), processInstance.getBusinessKey(), processInstance.getTenantId(), nextElement.getId(), decisionEnum);
         }
     }
 
