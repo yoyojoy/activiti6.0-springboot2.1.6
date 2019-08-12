@@ -149,7 +149,7 @@ public class ProcessManageController {
             if(CollectionUtils.isEmpty(ids)){
                 ids = new ArrayList<>();
             }
-            ids.add(userId);
+            ids.add(String.format("USER%s", userId));
             ao.setDealIds(ids);
             return processService.getPersonalUndoTaskList(ao);
         }catch (Exception e){
